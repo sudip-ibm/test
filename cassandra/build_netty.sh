@@ -87,9 +87,9 @@ function configureAndInstall() {
     elif [[ "$JAVA_PROVIDED" == "Temurin17" ]]; then
         printf -- "\nInstalling Temurin17 Runtime . . . \n"
         cd "$SOURCE_ROOT"
-        wget -O temurin17.tar.gz https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.2%2B8/OpenJDK17U-jdk_s390x_linux_hotspot_17.0.2_8.tar.gz
+        wget -O temurin17.tar.gz https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.13%2B11/OpenJDK17U-jdk_s390x_linux_hotspot_17.0.13_11.tar.gz
         tar zxf temurin17.tar.gz
-        export JAVA_HOME=$SOURCE_ROOT/jdk-17.0.2+8
+        export JAVA_HOME=$SOURCE_ROOT/jdk-17.0.13+11
         printf -- "Installation of Temurin17 Runtime is successful\n" >>"$LOG_FILE"
     elif [[ "$JAVA_PROVIDED" == "OpenJDK17" ]]; then
         printf -- "\nInstalling OpenJDK17 Runtime . . . \n"
