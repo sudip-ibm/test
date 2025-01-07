@@ -171,7 +171,13 @@ function configureAndInstall() {
     cd netty
     git checkout netty-4.1.68.Final
     curl -sSL https://raw.githubusercontent.com/sudip-ibm/test/refs/heads/main/cassandra/netty.patch | git apply
-    mvn -T 1C install -DskipTests -Dmaven.javadoc.skip=true
+    if [[ "$DISTRO" == "ubuntu"* ]]; then
+        mvn -T 1C install -DskipTests -Dmaven.javadoc.skip=true
+    elif [[ "$DISTRO" == "rhel"* ]]; then
+        mvn install -DskipTests -Dmaven.javadoc.skip=true -Dos.detected.classifier=linux-s390_64-fedora
+    elif [[ "$DISTRO" == "sles"* ]]; then
+        mvn install -DskipTests -Dmaven.javadoc.skip=true -Dos.detected.classifier=linux-s390_64-suse
+    fi
 
     # Install Ant
     if [[ "$DISTRO" == "rhel-8"* || "$ID" == "sles" ]]; then
