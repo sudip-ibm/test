@@ -75,7 +75,6 @@ function cleanup() {
     # Remove artifacts
     if [[ "$JAVA_PROVIDED" == "Temurin11" ]]; then
         rm -rf ${CURDIR}/temurin11.tar.gz
-    fi
     elif [[ "$JAVA_PROVIDED" == "Temurin17" ]]; then
         rm -rf ${CURDIR}/temurin17.tar.gz
     fi
