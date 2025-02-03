@@ -15,7 +15,7 @@ CURDIR="$(pwd)"
 SOURCE_ROOT="$(pwd)"
 USER="$(whoami)"
 
-PATCH_URL="https://raw.githubusercontent.com/linux-on-ibm-z/scripts/master/Tensorflow/2.18.0/patch"
+PATCH_URL="https://raw.githubusercontent.com/sudip-ibm/test/refs/heads/main/tf"
 ICU_MAJOR_VERSION="69"
 ICU_RELEASE="release-${ICU_MAJOR_VERSION}-1"
 NUMPY_VERSION="2.2.2"
