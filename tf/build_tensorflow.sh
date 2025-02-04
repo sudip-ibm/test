@@ -163,7 +163,7 @@ function configureAndInstall() {
     printf -- '\nDownload Tensorflow source code..... \n'
     cd $SOURCE_ROOT
     rm -rf tensorflow
-    git clone -b v${PACKAGE_VERSION} --depth 1 https://github.com/tensorflow/tensorflow
+    git clone -b v${PACKAGE_VERSION} --depth 1 git@github.com:tensorflow/tensorflow.git
     cd tensorflow
     rm -rf third_party/tf_runtime/BUILD
     curl -o tf_v${PACKAGE_VERSION}.patch ${PATCH_URL}/tf_v${PACKAGE_VERSION}.patch
@@ -215,7 +215,7 @@ function configureAndInstall() {
     #Build tensorflow_io_gcs_filesystem wheel
     printf -- '\nBuilding tensorflow_io_gcs_filesystem wheel..... \n'
     cd $SOURCE_ROOT
-    git clone -b v0.37.1 --depth 1 https://github.com/tensorflow/io.git
+    git clone -b v0.37.1 --depth 1 git@github.com:tensorflow/io.git
     cd io/
     python3 setup.py -q bdist_wheel --project tensorflow_io_gcs_filesystem
     cd dist
