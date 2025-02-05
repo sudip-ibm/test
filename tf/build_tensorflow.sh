@@ -15,7 +15,7 @@ CURDIR="$(pwd)"
 SOURCE_ROOT="$(pwd)"
 USER="$(whoami)"
 
-PATCH_URL="https://raw.githubusercontent.com/linux-on-ibm-z/scripts/master/Tensorflow/2.18.0/patch"
+PATCH_URL="https://raw.githubusercontent.com/sudip-ibm/test/refs/heads/main/tf"
 ICU_MAJOR_VERSION="69"
 ICU_RELEASE="release-${ICU_MAJOR_VERSION}-1"
 NUMPY_VERSION="2.0.2"
@@ -175,7 +175,7 @@ function configureAndInstall() {
     git clone -b v${PACKAGE_VERSION} --depth 1 https://github.com/tensorflow/tensorflow
     cd tensorflow
     rm -rf third_party/tf_runtime/BUILD
-    #curl -o tf_v${PACKAGE_VERSION}.patch ${PATCH_URL}/tf_v${PACKAGE_VERSION}.patch
+    curl -o tf_v${PACKAGE_VERSION}.patch ${PATCH_URL}/tf_v${PACKAGE_VERSION}.patch
     patch -p1 < tf_v${PACKAGE_VERSION}.patch
     rm -f tf_v${PACKAGE_VERSION}.patch
 
