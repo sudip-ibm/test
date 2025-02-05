@@ -15,11 +15,10 @@ CURDIR="$(pwd)"
 SOURCE_ROOT="$(pwd)"
 USER="$(whoami)"
 
-PATCH_URL="https://raw.githubusercontent.com/sudip-ibm/test/refs/heads/main/tf"
+PATCH_URL="https://raw.githubusercontent.com/linux-on-ibm-z/scripts/master/Tensorflow/2.18.0/patch"
 ICU_MAJOR_VERSION="69"
 ICU_RELEASE="release-${ICU_MAJOR_VERSION}-1"
-NUMPY_VERSION="2.2.2"
-SCIPY_VERSION="1.13.0"
+NUMPY_VERSION="2.0.2"
 
 FORCE="false"
 TESTS="false"
@@ -75,11 +74,17 @@ function cleanup() {
     # Remove artifacts
     rm -rf $SOURCE_ROOT/bazel-6.5.0-dist.zip
     rm -rf $SOURCE_ROOT/icu/
+    rm -rf $SOURCE_ROOT/llvm.sh
     printf -- "Cleaned up the artifacts\n" | tee -a "$LOG_FILE"
 
 }
 
 function installClang() {
+    printf -- '\nBuilding clang..... \n'
+    if [ -e "/usr/bin/clang" ]; then
+        echo "clang already installed."
+        return 0
+    fi
     cd $SOURCE_ROOT
     sudo apt-get install -y lsb-release software-properties-common gnupg
     wget https://apt.llvm.org/llvm.sh
@@ -154,51 +159,32 @@ function configureAndInstall() {
     printf -- "\nBuilding ICU big-endian data. . . \n"
     buildIcuData |& tee -a "${LOG_FILE}"
 
-    #Install grpcio
-    printf -- "\nInstalling grpcio. . . \n"
-    export GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=True
-    sudo -E pip3 install grpcio |& tee -a "${LOG_FILE}"
+    #Build tensorflow_io_gcs_filesystem wheel
+    printf -- '\nBuilding tensorflow_io_gcs_filesystem wheel..... \n'
+    cd $SOURCE_ROOT
+    git clone -b v0.37.1 --depth 1 https://github.com/tensorflow/io.git
+    cd io/
+    python3 setup.py -q bdist_wheel --project tensorflow_io_gcs_filesystem
+    cd dist
+    pip3 install ./tensorflow_io_gcs_filesystem-0.37.1-cp*-cp*-linux_s390x.whl
 
     # Build TensorFlow
     printf -- '\nDownload Tensorflow source code..... \n'
     cd $SOURCE_ROOT
     rm -rf tensorflow
-    git clone -b v${PACKAGE_VERSION} --depth 1 git@github.com:tensorflow/tensorflow.git
+    git clone -b v${PACKAGE_VERSION} --depth 1 https://github.com/tensorflow/tensorflow
     cd tensorflow
     rm -rf third_party/tf_runtime/BUILD
-    curl -o tf_v${PACKAGE_VERSION}.patch ${PATCH_URL}/tf_v${PACKAGE_VERSION}.patch
+    #curl -o tf_v${PACKAGE_VERSION}.patch ${PATCH_URL}/tf_v${PACKAGE_VERSION}.patch
     patch -p1 < tf_v${PACKAGE_VERSION}.patch
     rm -f tf_v${PACKAGE_VERSION}.patch
 
-    case "$PYTHON_V" in
-
-    "3.9")
-        curl -o req_lock_3_9.patch ${PATCH_URL}/req_lock_3_9.patch
-        patch -p1 < req_lock_3_9.patch
-        rm -f req_lock_3_9.patch
-        ;;
-
-    "3.10")
-        curl -o req_lock_3_10.patch ${PATCH_URL}/req_lock_3_10.patch
-        patch -p1 < req_lock_3_10.patch
-        rm -f req_lock_3_10.patch
-        ;;
-
-    "3.11")
-        curl -o req_lock_3_11.patch ${PATCH_URL}/req_lock_3_11.patch
-        patch -p1 < req_lock_3_11.patch
-        rm -f req_lock_3_11.patch
-        ;;
-
-    "3.12")
-        curl -o req_lock_3_12.patch ${PATCH_URL}/req_lock_3_12.patch
-        patch -p1 < req_lock_3_12.patch
-        rm -f req_lock_3_12.patch
-        ;;
-    esac
+    export GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=True
+    pip3 install -r $REQUIREMENTS_FILE
 
     cp ${SOURCE_ROOT}/icu/icu4c/source/data/out/tmp/icu_conversion_data_big_endian.c.gz.* third_party/icu/data/
  
+    export TF_NEED_CLANG=1
     export TF_NEED_OPENCL_SYCL=0
     export TF_NEED_CUDA=0
     export TF_NEED_MKL=0
@@ -212,19 +198,10 @@ function configureAndInstall() {
     printf -- '\nBuilding TENSORFLOW..... \n'
     TF_SYSTEM_LIBS=boringssl bazel build --copt=-Wno-gnu-offsetof-extensions --define tflite_with_xnnpack=false //tensorflow/tools/pip_package:wheel --repo_env=WHEEL_NAME=tensorflow_cpu
 
-    #Build tensorflow_io_gcs_filesystem wheel
-    printf -- '\nBuilding tensorflow_io_gcs_filesystem wheel..... \n'
-    cd $SOURCE_ROOT
-    git clone -b v0.37.1 --depth 1 git@github.com:tensorflow/io.git
-    cd io/
-    python3 setup.py -q bdist_wheel --project tensorflow_io_gcs_filesystem
-    cd dist
-    sudo pip3 install ./tensorflow_io_gcs_filesystem-0.37.1-cp*-cp*-linux_s390x.whl
-
     #Install TensorFlow wheel
     printf -- '\nInstalling Tensorflow wheel..... \n'
     cd $SOURCE_ROOT/tensorflow
-    sudo pip3 install bazel-bin/tensorflow/tools/pip_package/wheel_house/tensorflow_cpu-${PACKAGE_VERSION}-cp*-cp*-linux_s390x.whl
+    pip3 install bazel-bin/tensorflow/tools/pip_package/wheel_house/tensorflow_cpu-${PACKAGE_VERSION}-cp*-cp*-linux_s390x.whl
 
     # Run Tests
     runTest
@@ -311,36 +288,55 @@ case "$PYTHON_V" in
 
 "3.9")
     PY_VERSION=3.9.7
+    REQUIREMENTS_FILE=requirements_lock_3_9.txt
     ;;
 
 "3.10")
     PY_VERSION=3.10.6
+    REQUIREMENTS_FILE=requirements_lock_3_10.txt
     ;;
 
 "3.11")
     PY_VERSION=3.11.4
+    REQUIREMENTS_FILE=requirements_lock_3_11.txt
     ;;
 
 "3.12")
     PY_VERSION=3.12.0
+    REQUIREMENTS_FILE=requirements_lock_3_12.txt
     ;;
 esac
 
 DISTRO="$ID-$VERSION_ID"
 
 case "$DISTRO" in
+"ubuntu-20.04")
+    printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" |& tee -a "$LOG_FILE"
+    printf -- "Installing dependencies... it may take some time.\n"
+    sudo apt-get update
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install wget git unzip zip openjdk-11-jdk pkg-config libhdf5-dev libssl-dev libblas-dev liblapack-dev gfortran curl patchelf gcc-10 g++-10 libopenblas-dev libatlas-base-dev libapr1-dev -y |& tee -a "${LOG_FILE}"
+    installClang |& tee -a "${LOG_FILE}"
+    buildBazel |& tee -a "${LOG_FILE}"
+    setupPython |& tee -a "${LOG_FILE}"
+    sudo ldconfig
+    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 60
+    sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 60
+    sudo update-alternatives --install /usr/local/bin/pip3 pip3 /usr/local/bin/pip${PYTHON_V} 50
+    pip3 install wheel==0.41.3 setuptools==70.0.0 numpy==$NUMPY_VERSION |& tee -a "${LOG_FILE}"
+    configureAndInstall |& tee -a "${LOG_FILE}"
+    ;;
 
 "ubuntu-22.04" | "ubuntu-24.04")
     printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" |& tee -a "$LOG_FILE"
     printf -- "Installing dependencies... it may take some time.\n"
     sudo apt-get update
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install wget git unzip zip openjdk-11-jdk pkg-config libhdf5-dev libssl-dev libblas-dev liblapack-dev gfortran curl patchelf gcc g++ libopenblas-dev libatlas-base-dev -y |& tee -a "${LOG_FILE}"
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install wget git unzip zip openjdk-11-jdk pkg-config libhdf5-dev libssl-dev libblas-dev liblapack-dev gfortran curl patchelf libopenblas-dev libatlas-base-dev libapr1-dev -y |& tee -a "${LOG_FILE}"
     installClang |& tee -a "${LOG_FILE}"
     buildBazel |& tee -a "${LOG_FILE}"
     setupPython |& tee -a "${LOG_FILE}"
     sudo ldconfig
     sudo update-alternatives --install /usr/local/bin/pip3 pip3 /usr/local/bin/pip${PYTHON_V} 50
-    pip3 install --no-cache-dir numpy==$NUMPY_VERSION wheel packaging requests opt_einsum portpicker protobuf scipy==$SCIPY_VERSION psutil setuptools==70.0.0 |& tee -a "${LOG_FILE}"
+    pip3 install wheel==0.41.3 setuptools==70.0.0 numpy==$NUMPY_VERSION |& tee -a "${LOG_FILE}"
     configureAndInstall |& tee -a "${LOG_FILE}"
     ;;
 
@@ -351,4 +347,3 @@ case "$DISTRO" in
 esac
 
 gettingStarted |& tee -a "${LOG_FILE}"
-
