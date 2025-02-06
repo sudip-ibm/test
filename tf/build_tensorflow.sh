@@ -316,7 +316,7 @@ case "$DISTRO" in
     sudo apt-get update
     sudo DEBIAN_FRONTEND=noninteractive apt-get install wget git unzip zip openjdk-11-jdk pkg-config libhdf5-dev libssl-dev libblas-dev liblapack-dev gfortran curl patchelf gcc-10 g++-10 libopenblas-dev libatlas-base-dev libapr1-dev -y |& tee -a "${LOG_FILE}"
     installClang |& tee -a "${LOG_FILE}"
-    buildBazel |& tee -a "${LOG_FILE}"
+    #buildBazel |& tee -a "${LOG_FILE}"
     setupPython |& tee -a "${LOG_FILE}"
     sudo ldconfig
     sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 60
@@ -332,7 +332,7 @@ case "$DISTRO" in
     sudo apt-get update
     sudo DEBIAN_FRONTEND=noninteractive apt-get install wget git unzip zip openjdk-11-jdk pkg-config libhdf5-dev libssl-dev libblas-dev liblapack-dev gfortran curl patchelf libopenblas-dev libatlas-base-dev libapr1-dev -y |& tee -a "${LOG_FILE}"
     installClang |& tee -a "${LOG_FILE}"
-    buildBazel |& tee -a "${LOG_FILE}"
+    #buildBazel |& tee -a "${LOG_FILE}"
     setupPython |& tee -a "${LOG_FILE}"
     sudo ldconfig
     sudo update-alternatives --install /usr/local/bin/pip3 pip3 /usr/local/bin/pip${PYTHON_V} 50
