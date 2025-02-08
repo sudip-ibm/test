@@ -103,6 +103,8 @@ function buildBazel() {
     sed -i 's#Bazel/${PACKAGE_VERSION}/patch#Bazel/6.4.0/patch#g' build_bazel.sh
     sed -i 's/apt-get install/DEBIAN_FRONTEND=noninteractive apt-get install/g' build_bazel.sh
     sed -i 's/23.10/24.04/g' build_bazel.sh
+    sed -i 's/git clone https:\/\/github.com\/bazelbuild\/bazel.git/git clone -b $PACKAGE_VERSION --depth 1 https:\/\/github.com\/bazelbuild\/bazel.git/g' build_bazel.sh
+    sed -i '170d' build_bazel.sh
     bash build_bazel.sh -y
     sudo cp $SOURCE_ROOT/bazel/output/bazel /usr/local/bin/bazel
 }
@@ -316,7 +318,7 @@ case "$DISTRO" in
     sudo apt-get update
     sudo DEBIAN_FRONTEND=noninteractive apt-get install wget git unzip zip openjdk-11-jdk pkg-config libhdf5-dev libssl-dev libblas-dev liblapack-dev gfortran curl patchelf gcc-10 g++-10 libopenblas-dev libatlas-base-dev libapr1-dev -y |& tee -a "${LOG_FILE}"
     installClang |& tee -a "${LOG_FILE}"
-    #buildBazel |& tee -a "${LOG_FILE}"
+    buildBazel |& tee -a "${LOG_FILE}"
     setupPython |& tee -a "${LOG_FILE}"
     sudo ldconfig
     sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 60
@@ -332,7 +334,7 @@ case "$DISTRO" in
     sudo apt-get update
     sudo DEBIAN_FRONTEND=noninteractive apt-get install wget git unzip zip openjdk-11-jdk pkg-config libhdf5-dev libssl-dev libblas-dev liblapack-dev gfortran curl patchelf libopenblas-dev libatlas-base-dev libapr1-dev -y |& tee -a "${LOG_FILE}"
     installClang |& tee -a "${LOG_FILE}"
-    #buildBazel |& tee -a "${LOG_FILE}"
+    buildBazel |& tee -a "${LOG_FILE}"
     setupPython |& tee -a "${LOG_FILE}"
     sudo ldconfig
     sudo update-alternatives --install /usr/local/bin/pip3 pip3 /usr/local/bin/pip${PYTHON_V} 50
