@@ -13,7 +13,7 @@ PACKAGE_NAME="tensorflow-serving"
 PACKAGE_VERSION="2.18.0"
 SOURCE_ROOT="$(pwd)"
 USER="$(whoami)"
-PATCH_URL="https://raw.githubusercontent.com/linux-on-ibm-z/scripts/master/TensorflowServing/2.18.0/patch"
+PATCH_URL="https://raw.githubusercontent.com/sudip-ibm/test/refs/heads/main/serving"
 
 FORCE="false"
 TESTS="false"
