@@ -71,7 +71,7 @@ function configureAndInstall() {
     #Install Tensorflow
     printf -- '\nInstalling Tensoflow..... \n'
     cd $SOURCE_ROOT
-    wget -q https://raw.githubusercontent.com/linux-on-ibm-z/scripts/master/Tensorflow/2.18.0/build_tensorflow.sh
+    wget -q https://raw.githubusercontent.com/sudip-ibm/test/refs/heads/main/tf/build_tensorflow.sh
     sed -i "182i \ \ \ \ curl -o tf.patch $PATCH_URL/tf.patch" build_tensorflow.sh
     sed -i '183i \ \ \ \ patch -p1 < tf.patch' build_tensorflow.sh
     sed -i "184i \ \ \ \ curl -o upb_str_fix.patch $PATCH_URL/upb_str_fix.patch" build_tensorflow.sh
