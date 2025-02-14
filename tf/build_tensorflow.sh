@@ -203,7 +203,7 @@ function configureAndInstall() {
     #Install TensorFlow wheel
     printf -- '\nInstalling Tensorflow wheel..... \n'
     cd $SOURCE_ROOT/tensorflow
-    pip3 install bazel-bin/tensorflow/tools/pip_package/wheel_house/tensorflow_cpu-${PACKAGE_VERSION}-cp*-cp*-linux_s390x.whl
+    pip3 install bazel-bin/tensorflow/tools/pip_package/wheel_house/tensorflow-${PACKAGE_VERSION}-cp*-cp*-linux_s390x.whl
 
     # Run Tests
     runTest
