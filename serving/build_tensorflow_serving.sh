@@ -97,7 +97,7 @@ function configureAndInstall() {
     printf -- '\nBuilding Tensorflow Serving..... \n'
     cd $SOURCE_ROOT/serving
     bazel build tensorflow_serving/...
-    sudo pip3 install tensorflow-serving-api==2.18.0
+    pip3 install tensorflow-serving-api==2.18.0
 
     sudo cp $SOURCE_ROOT/serving/bazel-bin/tensorflow_serving/model_servers/tensorflow_model_server /usr/local/bin
 
