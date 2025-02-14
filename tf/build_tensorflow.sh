@@ -198,7 +198,7 @@ function configureAndInstall() {
 
     #Build Tensorflow
     printf -- '\nBuilding TENSORFLOW..... \n'
-    TF_SYSTEM_LIBS=boringssl bazel build --copt=-Wno-gnu-offsetof-extensions --define tflite_with_xnnpack=false //tensorflow/tools/pip_package:wheel --repo_env=WHEEL_NAME=tensorflow_cpu
+    TF_SYSTEM_LIBS=boringssl bazel build --copt=-Wno-gnu-offsetof-extensions --define tflite_with_xnnpack=false //tensorflow/tools/pip_package:wheel --repo_env=WHEEL_NAME=tensorflow
 
     #Install TensorFlow wheel
     printf -- '\nInstalling Tensorflow wheel..... \n'
