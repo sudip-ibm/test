@@ -1,12 +1,31 @@
 diff --git a/third_party/tf_runtime/BUILD b/third_party/tf_runtime/BUILD
 new file mode 100644
 index 00000000000..e69de29bb2d
+diff --git a/third_party/grpc/upb_str_fix.patch b/third_party/grpc/upb_str_fix.patch
+new file mode 100644
+index 00000000..ad108d99
+--- /dev/null
++++ b/third_party/grpc/upb_str_fix.patch
+@@ -0,0 +1,13 @@
++diff --git a/upb/upb.c b/upb/upb.c
++index 266ea7d7..39dddcbf 100644
++--- a/upb/upb.c
+++++ b/upb/upb.c
++@@ -37,7 +37,7 @@ const char *upb_status_errmsg(const upb_status *status) { return status->msg; }
++ void upb_status_seterrmsg(upb_status *status, const char *msg) {
++   if (!status) return;
++   status->ok = false;
++-  strncpy(status->msg, msg, sizeof(status->msg));
+++  strncpy(status->msg, msg, sizeof(status->msg) -1 );
++   nullz(status);
++ }
++
 diff --git a/third_party/tf_runtime/temporary.patch b/third_party/tf_runtime/temporary.patch
 new file mode 100644
 index 00000000000..162a5464cbc
 --- /dev/null
 +++ b/third_party/tf_runtime/temporary.patch
-@@ -0,0 +1,57 @@
+@@ -0,0 +1,70 @@
 +diff --git a/include/tfrt/bef_converter/bef_emitter.h b/include/tfrt/bef_converter/bef_emitter.h
 +index 2aae7d44..154eda31 100644
 +--- a/include/tfrt/bef_converter/bef_emitter.h
@@ -64,6 +83,19 @@ index 00000000000..162a5464cbc
 +   return DeserializeTensorMetadataInternal(serialized.data(),
 +                                            serialized.size());
 + }
++diff --git a/include/tfrt/bef/bef_reader.h b/include/tfrt/bef/bef_reader.h
++index b0ff7ab5..20bc6e62 100644
++--- a/include/tfrt/bef/bef_reader.h
+++++ b/include/tfrt/bef/bef_reader.h
++@@ -146,7 +146,7 @@ class BEFKernel {
++                                                    kKernelEntryAlignment) /
++                                          kKernelEntryAlignment),
++         body_start_(result_table_ + header_->num_results) {
++-    ASSERT_LITTLE_ENDIAN();
+++    //ASSERT_LITTLE_ENDIAN();
++   }
++
++   uint32_t kernel_code() const { return header_->kernel_code; }
 diff --git a/third_party/xxnpack_header_fix.patch b/third_party/xxnpack_header_fix.patch
 new file mode 100644
 index 00000000000..3da16f44002
@@ -560,17 +592,21 @@ index 87cb2bdf896..7053c71d637 100644
          # Handles models with custom TFLite ops that cannot be resolved in
          # TensorFlow.
 diff --git a/tensorflow/python/BUILD b/tensorflow/python/BUILD
-index 0ad8e84b889..0adddfed7db 100644
+index 0ad8e84b889..fcabbb88e8f 100644
 --- a/tensorflow/python/BUILD
 +++ b/tensorflow/python/BUILD
-@@ -484,6 +484,7 @@ tf_python_pybind_extension(
+@@ -484,7 +484,10 @@ tf_python_pybind_extension(
          "//tensorflow/python/lib/core:pybind11_status",
          # The headers here cannot be brought in via cc_header_only_library
          "//tensorflow/compiler/aot:llvm_targets",
-+        "@llvm-project//llvm:TargetParser",
-     ],
+-    ],
++    ] + select({
++           "@platforms//cpu:s390x": ["@llvm-project//llvm:TargetParser"],
++           "//conditions:default": [],
++    }),
  )
  
+ tf_python_pybind_extension(
 diff --git a/tensorflow/python/eager/backprop_test.py b/tensorflow/python/eager/backprop_test.py
 index 18d1daacac3..9892722c35d 100644
 --- a/tensorflow/python/eager/backprop_test.py
@@ -962,6 +998,17 @@ index be83c971..b37aca31 100644
          strip_prefix = "XNNPACK-6b83f69d4938da4dc9ad63c00bd13e9695659a51",
          urls = tf_mirror_urls("https://github.com/google/XNNPACK/archive/6b83f69d4938da4dc9ad63c00bd13e9695659a51.zip"),
      )
+@@ -821,7 +822,9 @@ def _tf_repositories():
+         name = "upb",
+         sha256 = "61d0417abd60e65ed589c9deee7c124fe76a4106831f6ad39464e1525cef1454",
+         strip_prefix = "upb-9effcbcb27f0a665f9f345030188c0b291e32482",
+-        patch_file = ["//third_party/grpc:upb_platform_fix.patch"],
++        patch_file = ["//third_party/grpc:upb_platform_fix.patch",
++                      "//third_party/grpc:upb_str_fix.patch",
++        ],
+         urls = tf_mirror_urls("https://github.com/protocolbuffers/upb/archive/9effcbcb27f0a665f9f345030188c0b291e32482.tar.gz"),
+     )
+ 
 diff --git a/third_party/icu/data/BUILD.bazel b/third_party/icu/data/BUILD.bazel
 index ded85987f91..b1cde56e734 100644
 --- a/third_party/icu/data/BUILD.bazel
