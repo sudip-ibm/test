@@ -47,9 +47,9 @@ function prepare() {
     if [[ -z "$PYTHON_V" ]]; then
         PYTHON_V=3.11
     elif [[ "$PYTHON_V" != "3.9" && "$PYTHON_V" != "3.10" && "$PYTHON_V" != "3.11" && "$PYTHON_V" != "3.12" ]]; then
-            printf "Python version v$PYTHON_V is not supported, Please use supported version from {3.9, 3.10, 3.11, 3.12} only.\n"
-            exit 1
-        fi
+        printf "Python version v$PYTHON_V is not supported, Please use supported version from {3.9, 3.10, 3.11, 3.12} only.\n"
+        exit 1
+    fi
 
     if [[ "$FORCE" == "true" ]]; then
         printf -- 'Force attribute provided hence continuing with install without confirmation message\n' |& tee -a "$LOG_FILE"
