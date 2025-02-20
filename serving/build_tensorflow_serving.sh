@@ -40,6 +40,13 @@ function prepare() {
         exit 1
     fi
 
+    if [[ -z "$PYTHON_V" ]]; then
+        PYTHON_V=3.11
+    elif [[ "$PYTHON_V" != "3.9" && "$PYTHON_V" != "3.10" && "$PYTHON_V" != "3.11" && "$PYTHON_V" != "3.12" ]]; then
+        printf "Python version v$PYTHON_V is not supported, Please use supported version from {3.9, 3.10, 3.11, 3.12} only.\n"
+        exit 1
+    fi
+
     if [[ "$FORCE" == "true" ]]; then
         printf -- 'Force attribute provided hence continuing with install without confirmation message\n' |& tee -a "$LOG_FILE"
     else
@@ -69,14 +76,10 @@ function configureAndInstall() {
     printf -- 'Configuration and Installation started \n'
 
     #Install Tensorflow
-    printf -- '\nInstalling Tensoflow..... \n'
+    printf -- '\nInstalling Tensorflow..... \n'
     cd $SOURCE_ROOT
-    wget -q https://raw.githubusercontent.com/sudip-ibm/test/refs/heads/main/tf/build_tensorflow.sh
-    sed -i "182i \ \ \ \ curl -o tf.patch $PATCH_URL/tf.patch" build_tensorflow.sh
-    sed -i '183i \ \ \ \ patch -p1 < tf.patch' build_tensorflow.sh
-    sed -i "184i \ \ \ \ curl -o upb_str_fix.patch $PATCH_URL/upb_str_fix.patch" build_tensorflow.sh
-    sed -i "185i \ \ \ \ cp upb_str_fix.patch third_party/grpc/" build_tensorflow.sh
-    bash build_tensorflow.sh -y
+    wget -q https://raw.githubusercontent.com/linux-on-ibm-z/scripts/master/Tensorflow/2.18.0/build_tensorflow.sh
+    bash build_tensorflow.sh -y -p $PYTHON_V
 
     #Build Tensorflow serving
     printf -- '\nDownload Tensorflow serving source code..... \n'
@@ -139,11 +142,11 @@ function logDetails() {
 function printHelp() {
     echo
     echo "Usage: "
-    echo "  bash build_tensorflow_serving.sh  [-d debug] [-y install-without-confirmation] [-t install-with-tests]"
+    echo "  bash build_tensorflow_serving.sh  [-d debug] [-y install-without-confirmation] [-t install-with-tests] [-p python-version]"
     echo
 }
 
-while getopts "h?dyt" opt; do
+while getopts "h?dytp:" opt; do
     case "$opt" in
     h | \?)
         printHelp
@@ -151,6 +154,9 @@ while getopts "h?dyt" opt; do
         ;;
     d)
         set -x
+        ;;
+    p)
+        PYTHON_V=$OPTARG
         ;;
     y)
         FORCE="true"
