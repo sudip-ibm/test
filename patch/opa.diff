@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 5b088bfd9..4353934b1 100644
+index 5b088bfd9..f11f449fb 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -219,7 +219,7 @@ wasm-test: wasm-lib-test wasm-rego-test
