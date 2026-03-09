@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 5b088bfd9..8bff03a86 100644
+index 5b088bfd9..4353934b1 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -219,7 +219,7 @@ wasm-test: wasm-lib-test wasm-rego-test
@@ -11,10 +11,10 @@ index 5b088bfd9..8bff03a86 100644
         cp wasm/_obj/opa.wasm internal/compiler/wasm/opa/opa.wasm
         cp wasm/_obj/callgraph.csv internal/compiler/wasm/opa/callgraph.csv
  else
-@@ -340,6 +340,22 @@ build-all-platforms: ci-build-linux ci-build-linux-static ci-build-darwin ci-bui
-
+@@ -341,6 +341,23 @@ build-all-platforms: ci-build-linux ci-build-linux-static ci-build-darwin ci-bui
  .PHONY: image-quick
  image-quick: image-quick-$(GOARCH)
+
 +.PHONY: image-s390x
 +image-s390x: build
 +       $(DOCKER) build \
@@ -31,9 +31,10 @@ index 5b088bfd9..8bff03a86 100644
 +               --build-arg BIN_SUFFIX=_static \
 +               --platform linux/s390x \
 +               .
-
++
  # % = arch
  .PHONY: image-quick-%
+ image-quick-%: ensure-executable-bin
 diff --git a/build/run-wasm-rego-tests.sh b/build/run-wasm-rego-tests.sh
 index 51bbdaf3f..e9b07ce85 100755
 --- a/build/run-wasm-rego-tests.sh
@@ -47,7 +48,3 @@ index 51bbdaf3f..e9b07ce85 100755
          sh -c 'tar xzf \
              /src/.go/cache/testcases.tar.gz \
              && node test.js opa.wasm' &
-diff --git a/internal/compiler/wasm/opa/opa.wasm b/internal/compiler/wasm/opa/opa.wasm
-index a294543e8..78a8cf5b5 100755
-Binary files a/internal/compiler/wasm/opa/opa.wasm and b/internal/compiler/wasm/opa/opa.wasm differ
-
