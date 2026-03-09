@@ -50,3 +50,4 @@ index 51bbdaf3f..e9b07ce85 100755
 diff --git a/internal/compiler/wasm/opa/opa.wasm b/internal/compiler/wasm/opa/opa.wasm
 index a294543e8..78a8cf5b5 100755
 Binary files a/internal/compiler/wasm/opa/opa.wasm and b/internal/compiler/wasm/opa/opa.wasm differ
+
